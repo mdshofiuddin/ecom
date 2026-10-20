@@ -1,0 +1,5 @@
+module.exports = {
+  FREE_SHIPPING_THRESHOLD: 150,
+  SHIPPING_COST: 15.00,
+  TAX_RATE: 0.05
+};

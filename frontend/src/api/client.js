@@ -1,30 +1,11 @@
-let csrfToken = null;
+import {
+  getCsrfToken,
+  setCsrfToken,
+  clearCsrfToken,
+  refreshCsrfToken
+} from './csrfClient.js';
 
-export function setCsrfToken(token) {
-  if (token) {
-    csrfToken = token;
-  }
-}
-
-export function clearCsrfToken() {
-  csrfToken = null;
-}
-
-export async function getCsrfToken(force = false) {
-  if (csrfToken && !force) return csrfToken;
-  try {
-    const res = await fetch('/api/csrf-token', {
-      credentials: 'include',
-      cache: 'no-store'
-    });
-    const data = await res.json();
-    csrfToken = data.csrfToken;
-    return csrfToken;
-  } catch (err) {
-    console.error('Failed to obtain CSRF token:', err);
-    return null;
-  }
-}
+export { getCsrfToken, setCsrfToken, clearCsrfToken, refreshCsrfToken };
 
 export async function apiRequest(endpoint, options = {}, isRetry = false) {
   const method = (options.method || 'GET').toUpperCase();
@@ -53,7 +34,7 @@ export async function apiRequest(endpoint, options = {}, isRetry = false) {
   // Automatically sync fresh CSRF token from server response headers if present
   const freshHeaderToken = response.headers.get('x-csrf-token');
   if (freshHeaderToken) {
-    csrfToken = freshHeaderToken;
+    setCsrfToken(freshHeaderToken);
   }
 
   const contentType = response.headers.get('content-type');
@@ -72,7 +53,7 @@ export async function apiRequest(endpoint, options = {}, isRetry = false) {
 
     if (isCsrfError && !isRetry) {
       console.warn('CSRF token mismatch detected. Fetching fresh token and retrying...');
-      csrfToken = null;
+      clearCsrfToken();
       await getCsrfToken(true);
       return apiRequest(endpoint, options, true);
     }
@@ -82,7 +63,7 @@ export async function apiRequest(endpoint, options = {}, isRetry = false) {
 
   // If response payload contains a new csrfToken, update client cache
   if (data && data.csrfToken) {
-    csrfToken = data.csrfToken;
+    setCsrfToken(data.csrfToken);
   }
 
   return data;

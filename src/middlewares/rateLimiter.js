@@ -1,9 +1,17 @@
 const rateLimit = require('express-rate-limit');
 const { logSecurityEvent } = require('../utils/logger');
+const {
+  GLOBAL_LIMIT_MAX,
+  GLOBAL_LIMIT_WINDOW_MS,
+  AUTH_LIMIT_ATTEMPTS,
+  AUTH_LIMIT_WINDOW_MS,
+  CHECKOUT_LIMIT_MAX,
+  CHECKOUT_LIMIT_WINDOW_MS
+} = require('../config/rateLimitConfig');
 
 const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300, // Limit each IP to 300 requests per windowMs
+  windowMs: GLOBAL_LIMIT_WINDOW_MS,
+  max: GLOBAL_LIMIT_MAX,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -21,8 +29,8 @@ const globalLimiter = rateLimit({
 });
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Max 10 attempts
+  windowMs: AUTH_LIMIT_WINDOW_MS,
+  max: AUTH_LIMIT_ATTEMPTS,
   standardHeaders: true,
   legacyHeaders: false,
   message: 'Too many authentication attempts. Please try again after 15 minutes.',
@@ -37,8 +45,8 @@ const authLimiter = rateLimit({
 });
 
 const checkoutLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 15,
+  windowMs: CHECKOUT_LIMIT_WINDOW_MS,
+  max: CHECKOUT_LIMIT_MAX,
   standardHeaders: true,
   legacyHeaders: false,
   message: 'Too many order requests. Please wait a few moments.',

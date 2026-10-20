@@ -7,7 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.0] - 2026-10-20
+## [1.0.2] - 2026-10-20
+
+### Dependency Hardening & CVE Audit
+- **Exact Version Pinning**:
+  - Pinned `better-sqlite3` to exact `13.0.3` (eliminating caret minor update drift).
+  - Pinned `cors` to exact `2.8.5`.
+  - Pinned `dotenv` to exact `18.0.8`.
+  - Pinned `ejs` to exact `7.0.2`.
+  - Pinned `lucide-react` in `frontend/package.json` to exact `1.59.0`.
+- **Lockfile Generation & Transitive Dependency Audit**:
+  - Generated and committed `frontend/package-lock.json` with pinned transitive dependency graph.
+  - Ran clean `npm audit` across both root and frontend packages: **0 vulnerabilities found** (0 critical, 0 high, 0 moderate, 0 low).
+- **Access Control & RBAC**:
+  - Added strict `requireApiAdmin` authorization guards on all admin API routes (`/api/admin/*`).
+  - Added strict ownership validation on `GET /api/orders/:orderNumber` to protect customer order details from unauthorized access.
+  - Verified `GET /api/my-orders` strictly filters orders by `req.session.user.id`.
+- **Database Index Optimization**:
+  - Added missing foreign key and composite indexes on `orders(user_id)`, `order_items(order_id)`, `order_items(product_id)`, `audit_logs(user_id)`, and `audit_logs(event_type, created_at)`.
+- **Docker Multi-Stage Build**:
+  - Added explicit frontend build step (`RUN cd frontend && npm install && npm run build`) in `Dockerfile`.
+
+## [1.0.1] - 2026-10-20
 
 ### Security & Dependency CVE Audit
 - **NPM Security Audit**: Executed clean vulnerability scan via `npm audit` across all dependencies.

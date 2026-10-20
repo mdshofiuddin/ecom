@@ -11,35 +11,47 @@ if (!fs.existsSync(dbDir)) {
 
 let db;
 
-try {
-  // Built-in SQLite in Node 22+ (zero native C++ compilation, zero segmentation faults)
-  const { DatabaseSync } = require('node:sqlite');
-  db = new DatabaseSync(dbPath);
-  db.pragma = (str) => db.exec(`PRAGMA ${str};`);
-  db.transaction = (fn) => {
-    return (...args) => {
-      db.exec('BEGIN');
-      try {
-        const result = fn(...args);
-        db.exec('COMMIT');
-        return result;
-      } catch (err) {
-        db.exec('ROLLBACK');
-        throw err;
-      }
+function connect(customPath) {
+  if (db) return db;
+  const targetPath = customPath || dbPath;
+  const targetDir = path.dirname(targetPath);
+  if (!fs.existsSync(targetDir)) {
+    fs.mkdirSync(targetDir, { recursive: true });
+  }
+
+  try {
+    // Built-in SQLite in Node 22+ (zero native C++ compilation, zero segmentation faults)
+    const { DatabaseSync } = require('node:sqlite');
+    db = new DatabaseSync(targetPath);
+    db.pragma = (str) => db.exec(`PRAGMA ${str};`);
+    db.transaction = (fn) => {
+      return (...args) => {
+        db.exec('BEGIN');
+        try {
+          const result = fn(...args);
+          db.exec('COMMIT');
+          return result;
+        } catch (err) {
+          db.exec('ROLLBACK');
+          throw err;
+        }
+      };
     };
-  };
-  console.log('[DATABASE] ⚡ Initialized with built-in node:sqlite (native zero-dependency)');
-} catch (e) {
-  // Fall back to better-sqlite3 if node:sqlite is not supported on older Node runtimes
-  const Database = require('better-sqlite3');
-  db = new Database(dbPath);
-  console.log('[DATABASE] ⚡ Initialized with better-sqlite3 driver');
+    console.log('[DATABASE] ⚡ Initialized with built-in node:sqlite (native zero-dependency)');
+  } catch (e) {
+    // Fall back to better-sqlite3 if node:sqlite is not supported on older Node runtimes
+    const Database = require('better-sqlite3');
+    db = new Database(targetPath);
+    console.log('[DATABASE] ⚡ Initialized with better-sqlite3 driver');
+  }
+
+  // Enable WAL mode for high concurrency & performance, and enforce foreign keys
+  db.pragma('journal_mode = WAL');
+  db.pragma('foreign_keys = ON');
+  return db;
 }
 
-// Enable WAL mode for high concurrency & performance, and enforce foreign keys
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+db = connect();
 
 function initDb() {
   // Users Table
@@ -126,7 +138,18 @@ function initDb() {
     );
   `);
 
-  seedData();
+  // Foreign Key & Performance Indexes (Vibe96 findings 4.1, 4.2, 4.3)
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
+    CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
+    CREATE INDEX IF NOT EXISTS idx_order_items_product_id ON order_items(product_id);
+    CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
+    CREATE INDEX IF NOT EXISTS idx_audit_logs_event_created ON audit_logs(event_type, created_at);
+  `);
+}
+
+function initSchema() {
+  initDb();
 }
 
 function seedData() {
@@ -243,6 +266,20 @@ function seedData() {
   }
 }
 
-initDb();
+function seed() {
+  seedData();
+}
+
+initSchema();
+seed();
+
+db.connect = connect;
+db.initSchema = initSchema;
+db.seed = seed;
 
 module.exports = db;
+module.exports.connect = connect;
+module.exports.initSchema = initSchema;
+module.exports.seed = seed;
+module.exports.db = db;
+

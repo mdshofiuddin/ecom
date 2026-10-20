@@ -17,6 +17,7 @@ const { notFoundHandler, globalErrorHandler } = require('./middlewares/errorHand
 
 // Route modules
 const apiRoutes = require('./routes/apiRoutes');
+const apiAdminRoutes = require('./routes/apiAdminRoutes');
 const productRoutes = require('./routes/productRoutes');
 const authRoutes = require('./routes/authRoutes');
 const cartRoutes = require('./routes/cartRoutes');
@@ -65,6 +66,10 @@ app.use(hpp());
 app.use(cookieParser(process.env.COOKIE_SECRET || 'apex_default_cookie_secret_998877'));
 
 // 7. Secure Session Configuration
+if (!process.env.SESSION_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('SESSION_SECRET must be set in production');
+}
+
 const sessionConfig = {
   name: '__ApexSession', // Avoid generic connect.sid
   secret: process.env.SESSION_SECRET || 'apex_default_session_secret_1234567890abcdef',
@@ -89,6 +94,7 @@ app.use(populateViewLocals);
 app.use(csrfProtection);
 
 // 11. REST API Route Registration
+app.use('/api/admin', apiAdminRoutes);
 app.use('/api', apiRoutes);
 
 // 12. React Single Page Application (SPA) Serving

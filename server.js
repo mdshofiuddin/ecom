@@ -1,6 +1,10 @@
 require('dotenv').config();
+const { connect, initSchema, seed } = require('./src/config/db');
+const db = connect();
+initSchema();
+seed();
+
 const app = require('./src/app');
-const db = require('./src/config/db');
 
 const PORT = process.env.PORT || 3000;
 

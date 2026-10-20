@@ -1,33 +1,15 @@
 const Product = require('../models/Product');
+const { calculateCart } = require('../utils/cartCalculator');
 
 class CartController {
   static showCart(req, res, next) {
     try {
-      const rawCart = req.session.cart || [];
-      const cartItems = [];
-      let subtotal = 0;
-
-      for (const item of rawCart) {
-        const product = Product.findById(item.productId);
-        if (product) {
-          const itemSubtotal = product.price * item.quantity;
-          subtotal += itemSubtotal;
-          cartItems.push({
-            product,
-            quantity: item.quantity,
-            subtotal: Math.round(itemSubtotal * 100) / 100
-          });
-        }
-      }
-
-      const shipping = subtotal > 150 || subtotal === 0 ? 0 : 15.00;
-      const tax = Math.round(subtotal * 0.05 * 100) / 100;
-      const total = Math.round((subtotal + shipping + tax) * 100) / 100;
+      const { cartItems, subtotal, shipping, tax, total } = calculateCart(req.session.cart);
 
       res.render('pages/cart', {
         title: 'Shopping Bag | ApexStore',
         cartItems,
-        subtotal: Math.round(subtotal * 100) / 100,
+        subtotal,
         shipping,
         tax,
         total

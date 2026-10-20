@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { logSecurityEvent } = require('../utils/logger');
+const { regenerateSessionWithUser } = require('../utils/sessionHelper');
 
 class AuthController {
   static showLogin(req, res) {
@@ -36,19 +37,9 @@ class AuthController {
       }
 
       // Session Fixation Protection: Regenerate session ID upon privilege elevation
-      req.session.regenerate((err) => {
+      regenerateSessionWithUser(req, user, (err) => {
         if (err) return next(err);
-
-        // Store user in session (exclude password hash)
-        req.session.user = {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role
-        };
-
         logSecurityEvent('SUCCESSFUL_LOGIN', user.id, req.ip, `Role: ${user.role}`);
-
         const returnTo = req.session.returnTo || (user.role === 'admin' ? '/admin/dashboard' : '/');
         delete req.session.returnTo;
         res.redirect(returnTo);
@@ -91,16 +82,8 @@ class AuthController {
       });
 
       // Regenerate session for newly authenticated user
-      req.session.regenerate((err) => {
+      regenerateSessionWithUser(req, newUser, (err) => {
         if (err) return next(err);
-
-        req.session.user = {
-          id: newUser.id,
-          name: newUser.name,
-          email: newUser.email,
-          role: newUser.role
-        };
-
         logSecurityEvent('USER_REGISTERED', newUser.id, req.ip, `New account: ${newUser.email}`);
         res.redirect('/?success=Account created successfully! Welcome to ApexStore.');
       });

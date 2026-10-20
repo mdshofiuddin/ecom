@@ -5,7 +5,8 @@ Welcome to the **ApexStore** production setup documentation. This guide details 
 ---
 
 ## 📋 System Requirements
-- **Node.js**: v20.x or v22.x LTS (Recommended: Node 22+ with native `node:sqlite`)
+- **Node.js**: v22.x LTS (Node.js 22+ required for native `node:sqlite` support. The app falls back to `better-sqlite3` on older versions but native is recommended).
+- **Engine Enforcement**: The `package.json` enforces Node `>=22.0.0`. Use `nvm install 22` or download from [nodejs.org](https://nodejs.org).
 - **NPM**: v10.x+
 - **Memory**: Minimum 512 MB RAM (1 GB recommended for high traffic)
 - **Disk**: 500 MB free disk space
@@ -63,9 +64,10 @@ cd ..
 ```
 
 ### 4. Initialize Database
+On first run, the app automatically creates `data/store.db` and seeds it with demo data from `database/seed.sql`.
 ```bash
-# The application automatically runs initDb() on start.
-# Alternatively, seed manually via sqlite3:
+# The application automatically runs initSchema() and seed() on start.
+# Alternatively, seed manually via sqlite3 if desired:
 sqlite3 data/store.db < database/schema.sql
 sqlite3 data/store.db < database/seed.sql
 ```
@@ -112,17 +114,23 @@ sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
 
 Deploy the complete application inside a production container with one command.
 
-### 1. Launch with Docker Compose
+### 1. Build Frontend Assets
+Build frontend assets: `npm run build:local` (this creates `frontend/dist/` required by the container).
+
+### 2. Launch with Docker Compose
 ```bash
 # Clone the repository
 git clone https://github.com/mdshofiuddin/ecom.git
 cd ecom
 
+# Build frontend assets: npm run build:local (this creates frontend/dist/ required by the container)
+npm run build:local
+
 # Start containerized application
 docker compose up --build -d
 ```
 
-### 2. Verify Container Health
+### 3. Verify Container Health
 ```bash
 docker compose ps
 docker compose logs -f
@@ -163,10 +171,10 @@ ApexStore comes pre-configured with a hardened administrator account:
 Inside the admin dashboard, create a new administrator account and delete or update the default demo account, or update it directly via SQL:
 ```bash
 # Generate bcrypt hash:
-node -e "const b = require('bcryptjs'); console.log(b.hashSync('YourNewPassword', 12));"
+node -e "const bcrypt = require('bcryptjs'); console.log(bcrypt.hashSync('YourNewPassword', 12));"
 
-# Update in database:
-sqlite3 data/store.db "UPDATE users SET password = 'NEW_HASH_HERE' WHERE email = 'admin@apexstore.com';"
+# Update in database with the generated hash:
+sqlite3 data/store.db "UPDATE users SET password = '<GENERATED_BCRYPT_HASH>' WHERE email = 'admin@apexstore.com';"
 ```
 
 ---
