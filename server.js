@@ -4,7 +4,7 @@ const db = require('./src/config/db');
 
 const PORT = process.env.PORT || 3000;
 
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`====================================================`);
   console.log(`🚀 ApexStore Production-Grade E-Commerce Server`);
   console.log(`🔒 Security: Helmet, CSRF, Rate-Limiting, HPP, Strict DB`);
