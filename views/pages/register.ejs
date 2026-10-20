@@ -1,0 +1,83 @@
+<%- include('../partials/header') %>
+
+<div class="form-card">
+  <div style="text-align: center; margin-bottom: 2rem;">
+    <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem;">
+      Create Account
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 0.95rem;">
+      Join ApexStore for streamlined checkout, tracking, and warranty perks.
+    </p>
+  </div>
+
+  <form action="/auth/register" method="POST" id="register-form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <div class="form-group">
+      <label class="form-label" for="reg-name">Full Name</label>
+      <input 
+        type="text" 
+        name="name" 
+        id="reg-name" 
+        class="form-input" 
+        required 
+        placeholder="e.g. John Doe"
+        value="<%= (formData && formData.name) ? formData.name : '' %>"
+      >
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="reg-email">Email Address</label>
+      <input 
+        type="email" 
+        name="email" 
+        id="reg-email" 
+        class="form-input" 
+        required 
+        placeholder="you@example.com"
+        value="<%= (formData && formData.email) ? formData.email : '' %>"
+      >
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="reg-password">Password</label>
+      <input 
+        type="password" 
+        name="password" 
+        id="reg-password" 
+        class="form-input" 
+        required 
+        autocomplete="new-password"
+        placeholder="Min 8 characters (Upper, Lower, Number, Special)"
+      >
+      <div style="margin-top: 0.4rem; font-size: 0.75rem; color: var(--text-muted);">
+        Must contain: 8+ characters, 1 uppercase, 1 lowercase, 1 number, and 1 special symbol (!@#$%^&*).
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="reg-confirm">Confirm Password</label>
+      <input 
+        type="password" 
+        name="confirmPassword" 
+        id="reg-confirm" 
+        class="form-input" 
+        required 
+        autocomplete="new-password"
+        placeholder="Repeat your password"
+      >
+    </div>
+
+    <div style="margin-top: 2rem;">
+      <button type="submit" class="btn btn-primary btn-full btn-lg" id="register-submit-btn">
+        Create Protected Account
+      </button>
+    </div>
+  </form>
+
+  <div style="text-align: center; margin-top: 1.75rem; font-size: 0.9rem; color: var(--text-secondary);">
+    Already registered? <a href="/auth/login" style="color: var(--accent-cyan); font-weight: 600;">Sign in here</a>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,14 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Logs and environment
+*.log
+.env
+cloudflared.exe
+cookies.txt
+.system_generated/
+scratch/
+
+# Database temporary files
+data/store.db-journal

@@ -1,0 +1,140 @@
+<%- include('../../partials/header') %>
+
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+  <div>
+    <span class="badge-admin">Administrator Mode</span>
+    <h1 style="font-size: 2.25rem; font-weight: 800; letter-spacing: -0.03em; margin-top: 0.35rem;">
+      Command & Analytics
+    </h1>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem;">
+    <a href="/admin/products/new" class="btn btn-primary btn-sm" id="admin-new-product-btn">+ New Product</a>
+    <a href="/admin/orders" class="btn btn-secondary btn-sm" id="admin-manage-orders-btn">Manage Orders</a>
+    <a href="/admin/audit-logs" class="btn btn-secondary btn-sm" id="admin-view-logs-btn">Security Logs</a>
+  </div>
+</div>
+
+<!-- Admin KPI Metrics -->
+<div class="admin-metrics-grid">
+  <div class="metric-card">
+    <div class="metric-label">Total Revenue</div>
+    <div class="metric-value" style="color: var(--accent-emerald);">$<%= metrics.totalRevenue.toFixed(2) %></div>
+    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Excluding cancelled orders</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Total Orders Placed</div>
+    <div class="metric-value"><%= metrics.totalOrders %></div>
+    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">All time completed checkouts</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Active Orders</div>
+    <div class="metric-value" style="color: var(--accent-cyan);"><%= metrics.pendingOrders %></div>
+    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Processing / in dispatch</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Verified Customers</div>
+    <div class="metric-value"><%= metrics.totalCustomers %></div>
+    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">Registered user accounts</div>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 2.5rem;">
+  <!-- Recent Orders Table -->
+  <div class="cart-table-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+      <h3 style="font-size: 1.15rem; font-weight: 700;">Recent Customer Orders</h3>
+      <a href="/admin/orders" style="font-size: 0.85rem; color: var(--accent-cyan);">View All &rarr;</a>
+    </div>
+
+    <% if (recentOrders.length === 0) { %>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">No orders placed yet.</p>
+    <% } else { %>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Order Ref</th>
+            <th>Customer</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% recentOrders.forEach(order => { %>
+            <tr>
+              <td><strong style="color: var(--accent-cyan);"><%= order.order_number %></strong></td>
+              <td><%= order.customer_name %></td>
+              <td><strong>$<%= order.total_amount.toFixed(2) %></strong></td>
+              <td><span class="status-badge status-<%= order.status %>"><%= order.status %></span></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+
+  <!-- Low Stock Inventory Alerts -->
+  <div class="summary-card">
+    <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1.25rem; color: var(--accent-amber);">
+      ⚠️ Low Stock Warnings
+    </h3>
+
+    <% if (lowStockProducts.length === 0) { %>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">All inventory levels healthy (> 15 units).</p>
+    <% } else { %>
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <% lowStockProducts.forEach(prod => { %>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); font-size: 0.88rem;">
+            <div>
+              <div style="font-weight: 600;"><%= prod.name %></div>
+              <div style="color: var(--text-muted); font-size: 0.78rem;"><%= prod.category %></div>
+            </div>
+            <div>
+              <span class="product-stock-tag low" style="position: static;"><%= prod.stock %> left</span>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <div style="margin-top: 1.5rem;">
+      <a href="/admin/products" class="btn btn-secondary btn-full btn-sm">Manage Inventory</a>
+    </div>
+  </div>
+</div>
+
+<!-- Security Events Stream -->
+<div class="cart-table-card">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+    <h3 style="font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+      <span>🛡️ Real-Time Security Audit Stream</span>
+    </h3>
+    <a href="/admin/audit-logs" style="font-size: 0.85rem; color: var(--accent-cyan);">Full Audit Trail &rarr;</a>
+  </div>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Event Type</th>
+        <th>Client IP</th>
+        <th>Details</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% recentLogs.forEach(log => { %>
+        <tr>
+          <td><code style="color: var(--accent-cyan); font-weight: 700;"><%= log.event_type %></code></td>
+          <td><%= log.ip_address %></td>
+          <td style="color: var(--text-secondary); max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><%= log.details %></td>
+          <td style="color: var(--text-muted); font-size: 0.8rem;"><%= new Date(log.created_at).toLocaleString() %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+
+<%- include('../../partials/footer') %>

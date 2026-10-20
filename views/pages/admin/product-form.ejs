@@ -1,0 +1,109 @@
+<%- include('../../partials/header') %>
+
+<div style="margin-bottom: 2rem;">
+  <a href="/admin/products" style="color: var(--text-secondary); font-size: 0.85rem;">&larr; Back to Products</a>
+  <h1 style="font-size: 2.25rem; font-weight: 800; letter-spacing: -0.03em; margin-top: 0.25rem;">
+    <%= isEdit ? 'Edit Product' : 'Add New Product' %>
+  </h1>
+</div>
+
+<div class="form-card" style="max-width: 680px;">
+  <form action="<%= isEdit ? '/admin/products/edit/' + product.id : '/admin/products/new' %>" method="POST">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+    <div class="form-group">
+      <label class="form-label" for="product-name">Product Name *</label>
+      <input 
+        type="text" 
+        name="name" 
+        id="product-name" 
+        class="form-input" 
+        required 
+        value="<%= product.name || '' %>"
+        placeholder="e.g. Apex Stealth Wireless ANC Headphones"
+      >
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div class="form-group">
+        <label class="form-label" for="product-category">Category *</label>
+        <select name="category" id="product-category" class="form-select" required>
+          <% categories.forEach(cat => { %>
+            <option value="<%= cat %>" <%= product.category === cat ? 'selected' : '' %>><%= cat %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="product-price">Price ($ USD) *</label>
+        <input 
+          type="number" 
+          step="0.01" 
+          name="price" 
+          id="product-price" 
+          class="form-input" 
+          required 
+          value="<%= product.price || '' %>"
+          placeholder="249.99"
+        >
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+      <div class="form-group">
+        <label class="form-label" for="product-stock">Stock Quantity *</label>
+        <input 
+          type="number" 
+          name="stock" 
+          id="product-stock" 
+          class="form-input" 
+          required 
+          value="<%= typeof product.stock !== 'undefined' ? product.stock : 25 %>"
+          placeholder="50"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="product-featured">Featured Showcase</label>
+        <select name="featured" id="product-featured" class="form-select">
+          <option value="0" <%= !product.featured ? 'selected' : '' %>>No</option>
+          <option value="1" <%= product.featured ? 'selected' : '' %>>Yes (Display on Homepage)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="product-image">Image URL *</label>
+      <input 
+        type="url" 
+        name="image_url" 
+        id="product-image" 
+        class="form-input" 
+        required 
+        value="<%= product.image_url || '' %>"
+        placeholder="https://images.unsplash.com/..."
+      >
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="product-desc">Full Technical Description *</label>
+      <textarea 
+        name="description" 
+        id="product-desc" 
+        rows="5" 
+        class="form-textarea" 
+        required 
+        placeholder="Detail key engineering specifications, connectivity, warranty, and material design..."
+      ><%= product.description || '' %></textarea>
+    </div>
+
+    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+      <button type="submit" class="btn btn-primary btn-lg" style="flex: 1;">
+        <%= isEdit ? 'Save Changes' : 'Publish Product' %>
+      </button>
+      <a href="/admin/products" class="btn btn-secondary btn-lg">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<%- include('../../partials/footer') %>

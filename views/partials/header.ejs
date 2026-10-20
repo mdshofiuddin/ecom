@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title><%= typeof title !== 'undefined' ? title : 'ApexStore | High Performance Tech Store' %></title>
+  <meta name="description" content="Secure, high-performance e-commerce store built with Express.js with enterprise-grade protection.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <%
+    const _path = typeof currentPath !== 'undefined' ? currentPath : '';
+    const _user = typeof currentUser !== 'undefined' ? currentUser : null;
+    const _isAdmin = typeof isAdmin !== 'undefined' ? isAdmin : false;
+    const _cartCount = typeof cartCount !== 'undefined' ? cartCount : 0;
+    const _csrf = typeof csrfToken !== 'undefined' ? csrfToken : '';
+  %>
+  <header class="header">
+    <div class="container navbar">
+      <a href="/" class="brand-logo" id="brand-logo-link">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #06b6d4;">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>
+        <span>ApexStore</span>
+        <span class="brand-badge">SECURE</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="/" class="nav-link <%= _path === '/' ? 'active' : '' %>" id="nav-home">Home</a></li>
+        <li><a href="/shop" class="nav-link <%= _path === '/shop' ? 'active' : '' %>" id="nav-shop">Catalog</a></li>
+        <% if (_user) { %>
+          <li><a href="/orders/my-orders" class="nav-link <%= _path === '/orders/my-orders' ? 'active' : '' %>" id="nav-orders">My Orders</a></li>
+        <% } %>
+        <% if (_isAdmin) { %>
+          <li>
+            <a href="/admin/dashboard" class="nav-link <%= _path.startsWith('/admin') ? 'active' : '' %>" id="nav-admin" style="color: var(--accent-amber);">
+              Admin Panel
+            </a>
+          </li>
+        <% } %>
+      </ul>
+
+      <div class="nav-actions">
+        <a href="/cart" class="cart-btn" id="header-cart-btn" title="View Cart">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+            <path d="M3 6h18"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+          <% if (_cartCount > 0) { %>
+            <span class="cart-badge" id="cart-item-count"><%= _cartCount %></span>
+          <% } %>
+        </a>
+
+        <% if (_user) { %>
+          <div class="user-menu">
+            <div class="user-tag">
+              <span><%= _user.name %></span>
+              <% if (_isAdmin) { %>
+                <span class="badge-admin">ADMIN</span>
+              <% } %>
+            </div>
+            <form action="/auth/logout" method="POST" style="display:inline;">
+              <input type="hidden" name="_csrf" value="<%= _csrf %>">
+              <button type="submit" class="btn btn-secondary btn-sm" id="logout-btn">Sign Out</button>
+            </form>
+          </div>
+        <% } else { %>
+          <a href="/auth/login" class="btn btn-secondary btn-sm" id="header-login-btn">Sign In</a>
+          <a href="/auth/register" class="btn btn-primary btn-sm" id="header-register-btn">Register</a>
+        <% } %>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="container">
+      <% if (typeof successMsg !== 'undefined' && successMsg) { %>
+        <div class="alert alert-success">
+          <span><%= successMsg %></span>
+        </div>
+      <% } %>
+      <% if (typeof errorMsg !== 'undefined' && errorMsg) { %>
+        <div class="alert alert-error">
+          <span><%= errorMsg %></span>
+        </div>
+      <% } %>
+      <% if (typeof validationErrors !== 'undefined' && validationErrors && validationErrors.length > 0) { %>
+        <div class="alert alert-error">
+          <div>
+            <strong>Please resolve the following:</strong>
+            <ul style="margin-top: 0.5rem; padding-left: 1.25rem;">
+              <% validationErrors.forEach(err => { %>
+                <li><%= err %></li>
+              <% }) %>
+            </ul>
+          </div>
+        </div>
+      <% } %>

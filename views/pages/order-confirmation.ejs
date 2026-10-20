@@ -1,0 +1,60 @@
+<%- include('../partials/header') %>
+
+<div class="form-card" style="max-width: 720px; padding: 3rem 2.5rem; text-align: center;">
+  <div style="display: inline-flex; align-items: center; justify-content: center; width: 4.5rem; height: 4.5rem; border-radius: 50%; background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); margin-bottom: 1.5rem; border: 1px solid rgba(16, 185, 129, 0.3);">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+  </div>
+
+  <h1 style="font-size: 2.25rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.5rem;">
+    Payment & Order Confirmed!
+  </h1>
+  <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+    Thank you for your purchase, <%= order.customer_name %>. We've dispatched a confirmation to <strong><%= order.customer_email %></strong>.
+  </p>
+
+  <div style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.5rem; text-align: left; margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;">
+      <div>
+        <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Order Reference</div>
+        <div style="font-size: 1.15rem; font-weight: 800; color: var(--accent-cyan);"><%= order.order_number %></div>
+      </div>
+      <div>
+        <span class="status-badge status-<%= order.status %>"><%= order.status %></span>
+      </div>
+    </div>
+
+    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+      <div><strong>Shipping Address:</strong> <%= order.shipping_address %>, <%= order.city %>, <%= order.postal_code %></div>
+      <div><strong>Placed on:</strong> <%= new Date(order.created_at).toLocaleString() %></div>
+    </div>
+
+    <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem; color: #fff;">Ordered Items:</h4>
+    <div style="border-top: 1px solid var(--border-color);">
+      <% order.items.forEach(item => { %>
+        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color); font-size: 0.9rem;">
+          <div>
+            <span style="font-weight: 600;"><%= item.product_name %></span>
+            <span style="color: var(--text-muted); font-size: 0.8rem;"> &times; <%= item.quantity %></span>
+          </div>
+          <div style="font-weight: 700;">$<%= (item.price * item.quantity).toFixed(2) %></div>
+        </div>
+      <% }) %>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; font-size: 1.2rem; font-weight: 800;">
+      <span>Total Paid:</span>
+      <span style="color: var(--accent-emerald);">$<%= order.total_amount.toFixed(2) %></span>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 1rem; justify-content: center;">
+    <a href="/shop" class="btn btn-primary" id="continue-shopping-btn">Continue Shopping</a>
+    <% if (currentUser) { %>
+      <a href="/orders/my-orders" class="btn btn-secondary" id="view-order-history-btn">View Order History</a>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>

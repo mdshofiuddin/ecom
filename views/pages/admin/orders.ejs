@@ -1,0 +1,69 @@
+<%- include('../../partials/header') %>
+
+<div style="margin-bottom: 2rem;">
+  <a href="/admin/dashboard" style="color: var(--text-secondary); font-size: 0.85rem;">&larr; Admin Command</a>
+  <h1 style="font-size: 2.25rem; font-weight: 800; letter-spacing: -0.03em; margin-top: 0.25rem;">
+    Customer Orders Management
+  </h1>
+  <p style="color: var(--text-secondary);">Fulfill, review, and track customer shipments.</p>
+</div>
+
+<% if (orders.length === 0) { %>
+  <div class="form-card" style="text-align: center; max-width: 500px; padding: 3rem 1.5rem;">
+    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">No orders found</h3>
+    <p style="color: var(--text-secondary);">Orders placed by customers will appear here.</p>
+  </div>
+<% } else { %>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Order Ref</th>
+          <th>Customer</th>
+          <th>Shipping Address</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Update Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% orders.forEach(order => { %>
+          <tr>
+            <td>
+              <strong style="color: var(--accent-cyan);"><%= order.order_number %></strong>
+            </td>
+            <td>
+              <div style="font-weight: 600;"><%= order.customer_name %></div>
+              <div style="color: var(--text-muted); font-size: 0.78rem;"><%= order.customer_email %></div>
+            </td>
+            <td style="font-size: 0.85rem; color: var(--text-secondary); max-width: 200px;">
+              <%= order.shipping_address %>, <%= order.city %>, <%= order.postal_code %>
+            </td>
+            <td><strong>$<%= order.total_amount.toFixed(2) %></strong></td>
+            <td>
+              <span class="status-badge status-<%= order.status %>"><%= order.status %></span>
+            </td>
+            <td style="color: var(--text-muted); font-size: 0.8rem;">
+              <%= new Date(order.created_at).toLocaleDateString() %>
+            </td>
+            <td>
+              <form action="/admin/orders/status/<%= order.id %>" method="POST" style="display:flex; gap: 0.4rem; align-items: center;">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <select name="status" class="form-select" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; width: auto;">
+                  <option value="processing" <%= order.status === 'processing' ? 'selected' : '' %>>Processing</option>
+                  <option value="shipped" <%= order.status === 'shipped' ? 'selected' : '' %>>Shipped</option>
+                  <option value="delivered" <%= order.status === 'delivered' ? 'selected' : '' %>>Delivered</option>
+                  <option value="cancelled" <%= order.status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+                </select>
+                <button type="submit" class="btn btn-secondary btn-sm" style="padding: 0.35rem 0.65rem;">Update</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+
+<%- include('../../partials/footer') %>

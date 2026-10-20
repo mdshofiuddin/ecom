@@ -1,0 +1,120 @@
+<%- include('../partials/header') %>
+
+<div style="margin-bottom: 2rem;">
+  <h1 style="font-size: 2.25rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.5rem;">
+    Your Shopping Bag
+  </h1>
+  <p style="color: var(--text-secondary);">Review your items and proceed through encrypted checkout.</p>
+</div>
+
+<% if (cartItems.length === 0) { %>
+  <div class="form-card" style="text-align: center; max-width: 500px; padding: 3.5rem 1.5rem;">
+    <div style="display: inline-flex; align-items: center; justify-content: center; width: 4.5rem; height: 4.5rem; border-radius: 50%; background: var(--bg-secondary); margin-bottom: 1.5rem; border: 1px solid var(--border-color);">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+        <path d="M3 6h18"/>
+        <path d="M16 10a4 4 0 0 1-8 0"/>
+      </svg>
+    </div>
+    <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem;">Your bag is empty</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 1.75rem;">Explore our high-performance hardware catalog and add your favorite gear.</p>
+    <a href="/shop" class="btn btn-primary btn-lg" id="empty-cart-shop-btn">Explore Catalog</a>
+  </div>
+<% } else { %>
+  <div class="cart-layout">
+    <!-- Items Table -->
+    <div class="cart-table-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+        <h3 style="font-size: 1.15rem; font-weight: 700;">Bag Items (<%= cartItems.length %>)</h3>
+        <form action="/cart/clear" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-secondary btn-sm" id="clear-cart-btn">Clear All</button>
+        </form>
+      </div>
+
+      <% cartItems.forEach(item => { %>
+        <div class="cart-item">
+          <img src="<%= item.product.image_url %>" alt="<%= item.product.name %>" class="cart-item-img">
+          
+          <div class="cart-item-info">
+            <h4><a href="/products/<%= item.product.slug %>"><%= item.product.name %></a></h4>
+            <p>$<%= item.product.price.toFixed(2) %> each &bull; Category: <%= item.product.category %></p>
+          </div>
+
+          <div class="cart-item-qty">
+            <form action="/cart/update" method="POST" style="display:inline;">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="productId" value="<%= item.product.id %>">
+              <input type="hidden" name="action" value="decrement">
+              <button type="submit" class="qty-btn" title="Decrease">&minus;</button>
+            </form>
+
+            <span style="font-weight: 700; min-width: 1.75rem; text-align: center;"><%= item.quantity %></span>
+
+            <form action="/cart/update" method="POST" style="display:inline;">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="productId" value="<%= item.product.id %>">
+              <input type="hidden" name="action" value="increment">
+              <button type="submit" class="qty-btn" title="Increase" <%= item.quantity >= item.product.stock ? 'disabled' : '' %>>&plus;</button>
+            </form>
+          </div>
+
+          <div style="font-size: 1.15rem; font-weight: 800; text-align: right;">
+            $<%= item.subtotal.toFixed(2) %>
+          </div>
+
+          <form action="/cart/update" method="POST" style="margin-left: 0.5rem;">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="productId" value="<%= item.product.id %>">
+            <input type="hidden" name="action" value="remove">
+            <button type="submit" class="btn btn-danger btn-sm" title="Remove Item">&times;</button>
+          </form>
+        </div>
+      <% }) %>
+    </div>
+
+    <!-- Summary Box -->
+    <div class="summary-card">
+      <h3 class="summary-title">Order Calculation</h3>
+
+      <div class="summary-row">
+        <span>Cart Subtotal</span>
+        <span>$<%= subtotal.toFixed(2) %></span>
+      </div>
+
+      <div class="summary-row">
+        <span>Insured Priority Shipping</span>
+        <% if (shipping === 0) { %>
+          <span style="color: var(--accent-emerald); font-weight: 700;">FREE</span>
+        <% } else { %>
+          <span>$<%= shipping.toFixed(2) %></span>
+        <% } %>
+      </div>
+
+      <div class="summary-row">
+        <span>Estimated Sales Tax (5%)</span>
+        <span>$<%= tax.toFixed(2) %></span>
+      </div>
+
+      <div class="summary-row total">
+        <span>Grand Total</span>
+        <span style="color: var(--accent-cyan);">$<%= total.toFixed(2) %></span>
+      </div>
+
+      <div style="margin-top: 2rem;">
+        <a href="/checkout" class="btn btn-primary btn-full btn-lg" id="proceed-checkout-btn">
+          Proceed to Checkout
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14m-7-7 7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      <div style="margin-top: 1.5rem; font-size: 0.8rem; color: var(--text-muted); text-align: center;">
+        🔒 All transactions verified via cryptographic tokens & anti-tamper ledger.
+      </div>
+    </div>
+  </div>
+<% } %>
+
+<%- include('../partials/footer') %>

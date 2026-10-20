@@ -1,0 +1,49 @@
+<%- include('../partials/header') %>
+
+<div style="margin-bottom: 2.5rem;">
+  <h1 style="font-size: 2.25rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.5rem;">
+    My Orders
+  </h1>
+  <p style="color: var(--text-secondary);">Track and view all historical purchases linked to your account.</p>
+</div>
+
+<% if (orders.length === 0) { %>
+  <div class="form-card" style="text-align: center; max-width: 500px; padding: 3rem 1.5rem;">
+    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">No orders yet</h3>
+    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">You haven't placed any orders yet. Visit our store to find your next favorite tech gear.</p>
+    <a href="/shop" class="btn btn-primary">Start Shopping</a>
+  </div>
+<% } else { %>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Order Number</th>
+          <th>Date</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% orders.forEach(order => { %>
+          <tr>
+            <td><strong style="color: var(--accent-cyan);"><%= order.order_number %></strong></td>
+            <td><%= new Date(order.created_at).toLocaleDateString() %></td>
+            <td>
+              <%= order.items.map(i => `${i.product_name} (${i.quantity})`).join(', ') %>
+            </td>
+            <td><strong>$<%= order.total_amount.toFixed(2) %></strong></td>
+            <td><span class="status-badge status-<%= order.status %>"><%= order.status %></span></td>
+            <td>
+              <a href="/orders/confirmation/<%= order.order_number %>" class="btn btn-secondary btn-sm">Receipt</a>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+
+<%- include('../partials/footer') %>

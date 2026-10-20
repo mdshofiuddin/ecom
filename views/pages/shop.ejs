@@ -1,0 +1,101 @@
+<%- include('../partials/header') %>
+
+<div style="margin-bottom: 2.5rem;">
+  <h1 style="font-size: 2.25rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.5rem;">
+    Product Catalog
+  </h1>
+  <p style="color: var(--text-secondary);">Browse our complete selection of enterprise hardware and lifestyle electronics.</p>
+</div>
+
+<!-- Search & Filter Controls -->
+<div class="summary-card" style="padding: 1.25rem; margin-bottom: 2.5rem;">
+  <form action="/shop" method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+    <div style="flex: 2; min-width: 220px;">
+      <input 
+        type="text" 
+        name="search" 
+        class="form-input" 
+        placeholder="Search products by name or keywords..." 
+        value="<%= currentSearch %>"
+        id="shop-search-input"
+      >
+    </div>
+
+    <div style="flex: 1; min-width: 160px;">
+      <select name="category" class="form-select" id="shop-category-select" onchange="this.form.submit()">
+        <option value="all" <%= currentCategory === 'all' ? 'selected' : '' %>>All Categories</option>
+        <% categories.forEach(cat => { %>
+          <option value="<%= cat %>" <%= currentCategory === cat ? 'selected' : '' %>><%= cat %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div style="flex: 1; min-width: 160px;">
+      <select name="sort" class="form-select" id="shop-sort-select" onchange="this.form.submit()">
+        <option value="featured" <%= currentSort === 'featured' ? 'selected' : '' %>>Featured Items</option>
+        <option value="price_asc" <%= currentSort === 'price_asc' ? 'selected' : '' %>>Price: Low to High</option>
+        <option value="price_desc" <%= currentSort === 'price_desc' ? 'selected' : '' %>>Price: High to Low</option>
+        <option value="name_asc" <%= currentSort === 'name_asc' ? 'selected' : '' %>>Name: A to Z</option>
+        <option value="newest" <%= currentSort === 'newest' ? 'selected' : '' %>>Newest Additions</option>
+      </select>
+    </div>
+
+    <div>
+      <button type="submit" class="btn btn-primary" id="shop-filter-btn">Search</button>
+      <% if (currentSearch || currentCategory !== 'all' || currentSort !== 'featured') { %>
+        <a href="/shop" class="btn btn-secondary" style="margin-left: 0.5rem;">Reset</a>
+      <% } %>
+    </div>
+  </form>
+</div>
+
+<!-- Products Grid -->
+<% if (products.length === 0) { %>
+  <div class="form-card" style="text-align: center; max-width: 500px; padding: 3rem 1.5rem;">
+    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">No products match your criteria</h3>
+    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Try adjusting your search terms or filter selection.</p>
+    <a href="/shop" class="btn btn-primary">Clear Filters</a>
+  </div>
+<% } else { %>
+  <div class="product-grid">
+    <% products.forEach(product => { %>
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <a href="/products/<%= product.slug %>">
+            <img src="<%= product.image_url %>" alt="<%= product.name %>" class="product-img" loading="lazy">
+          </a>
+          <% if (product.featured) { %>
+            <span class="product-featured-tag">FEATURED</span>
+          <% } %>
+          <% if (product.stock <= 5) { %>
+            <span class="product-stock-tag low">Only <%= product.stock %> left</span>
+          <% } else { %>
+            <span class="product-stock-tag">In Stock (<%= product.stock %>)</span>
+          <% } %>
+        </div>
+
+        <div class="product-body">
+          <span class="product-category"><%= product.category %></span>
+          <h3 class="product-name">
+            <a href="/products/<%= product.slug %>"><%= product.name %></a>
+          </h3>
+          <p class="product-desc"><%= product.description %></p>
+
+          <div class="product-footer">
+            <div class="product-price">$<%= product.price.toFixed(2) %></div>
+            <form action="/cart/add" method="POST">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="productId" value="<%= product.id %>">
+              <input type="hidden" name="quantity" value="1">
+              <button type="submit" class="btn btn-primary btn-sm" id="shop-add-btn-<%= product.id %>">
+                Add to Bag
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+
+<%- include('../partials/footer') %>
