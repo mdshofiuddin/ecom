@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  apexstore:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: apexstore_ecommerce
+    restart: unless-stopped
+    ports:
+      - "3000:10000"
+    environment:
+      - NODE_ENV=production
+      - PORT=10000
+      - SESSION_SECRET=apex_production_secure_session_secret_change_me
+      - DB_PATH=/app/data/store.db
+    volumes:
+      - store_data:/app/data
+
+volumes:
+  store_data:
