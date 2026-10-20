@@ -10,5 +10,6 @@ cookies.txt
 .system_generated/
 scratch/
 
-# Database temporary files
-data/store.db-journal
+# Database files (generated cleanly on server startup)
+data/*.db*
+data/*.db

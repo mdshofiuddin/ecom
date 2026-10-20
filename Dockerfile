@@ -1,30 +1,21 @@
-# Production Dockerfile for Express + React SPA
-FROM node:20-alpine
+# Production Dockerfile for Express + React SPA using Debian glibc
+FROM node:20-slim
 
 WORKDIR /app
 
-# Install native dependencies required by better-sqlite3 build
-RUN apk add --no-cache python3 make g++
+# Install native compilation dependencies for Debian
+RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ && rm -rf /var/lib/apt/lists/*
 
-# Copy root package files and install production dependencies
+# Copy root dependencies and install production packages
 COPY package*.json ./
 RUN npm install --omit=dev
 
-# Copy frontend package files and build React SPA
-COPY frontend/package*.json ./frontend/
-RUN cd frontend && npm install
-
-COPY frontend ./frontend
-RUN cd frontend && npm run build
-
-# Copy remaining server application code
+# Copy entire project including pre-built frontend/dist
 COPY . .
 
-# Set production environment
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=10000
 
-EXPOSE 3000
+EXPOSE 10000
 
-# Start server
 CMD ["node", "server.js"]
