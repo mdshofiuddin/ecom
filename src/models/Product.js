@@ -67,7 +67,7 @@ class Product {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const info = stmt.run(name, slug, description, Number(price), parseInt(stock, 10), category, image_url, featured ? 1 : 0);
-    return this.findById(info.lastInsertRowid);
+    return this.findById(Number(info.lastInsertRowid));
   }
 
   static update(id, { name, slug, description, price, stock, category, image_url, featured }) {

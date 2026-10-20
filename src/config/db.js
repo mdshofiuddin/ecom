@@ -1,4 +1,3 @@
-const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
@@ -10,7 +9,33 @@ if (!fs.existsSync(dbDir)) {
   fs.mkdirSync(dbDir, { recursive: true });
 }
 
-const db = new Database(dbPath);
+let db;
+
+try {
+  // Built-in SQLite in Node 22+ (zero native C++ compilation, zero segmentation faults)
+  const { DatabaseSync } = require('node:sqlite');
+  db = new DatabaseSync(dbPath);
+  db.pragma = (str) => db.exec(`PRAGMA ${str};`);
+  db.transaction = (fn) => {
+    return (...args) => {
+      db.exec('BEGIN');
+      try {
+        const result = fn(...args);
+        db.exec('COMMIT');
+        return result;
+      } catch (err) {
+        db.exec('ROLLBACK');
+        throw err;
+      }
+    };
+  };
+  console.log('[DATABASE] ⚡ Initialized with built-in node:sqlite (native zero-dependency)');
+} catch (e) {
+  // Fall back to better-sqlite3 if node:sqlite is not supported on older Node runtimes
+  const Database = require('better-sqlite3');
+  db = new Database(dbPath);
+  console.log('[DATABASE] ⚡ Initialized with better-sqlite3 driver');
+}
 
 // Enable WAL mode for high concurrency & performance, and enforce foreign keys
 db.pragma('journal_mode = WAL');

@@ -68,7 +68,7 @@ class Order {
         transactionId
       );
 
-      const orderId = orderResult.lastInsertRowid;
+      const orderId = Number(orderResult.lastInsertRowid);
 
       // Insert order items and decrement product inventory safely
       const insertItem = db.prepare(`

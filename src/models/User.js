@@ -17,7 +17,7 @@ class User {
       VALUES (?, ?, ?, ?)
     `);
     const info = stmt.run(name.trim(), email.toLowerCase().trim(), password, role);
-    return this.findById(info.lastInsertRowid);
+    return this.findById(Number(info.lastInsertRowid));
   }
 
   static getAll(limit = 50) {
