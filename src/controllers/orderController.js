@@ -132,6 +132,15 @@ class OrderController {
         });
       }
 
+      // Enforce ownership: only the order owner or an admin may view order confirmation details
+      if (order.user_id && order.user_id !== req.session.user?.id && req.session.user?.role !== 'admin') {
+        return res.status(403).render('pages/error', {
+          title: 'Access Denied',
+          statusCode: 403,
+          errorMessage: 'Access denied: You do not have permission to view this order.'
+        });
+      }
+
       res.render('pages/order-confirmation', {
         title: `Order Confirmed: ${order.order_number} | ApexStore`,
         order

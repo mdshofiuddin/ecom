@@ -70,6 +70,15 @@ class AuthController {
         });
       }
 
+      const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+      if (!password || !PASSWORD_REGEX.test(password)) {
+        return res.status(400).render('pages/register', {
+          title: 'Create Account | ApexStore',
+          validationErrors: ['Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.'],
+          formData: { name, email }
+        });
+      }
+
       // Hash password with 12 salt rounds
       const saltRounds = 12;
       const hashedPassword = await bcrypt.hash(password, saltRounds);

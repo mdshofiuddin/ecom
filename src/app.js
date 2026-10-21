@@ -1,4 +1,5 @@
 require('dotenv').config();
+const crypto = require('crypto');
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
@@ -17,6 +18,10 @@ const { notFoundHandler, globalErrorHandler } = require('./middlewares/errorHand
 
 // Route modules
 const apiRoutes = require('./routes/apiRoutes');
+const apiProductRoutes = require('./routes/apiProductRoutes');
+const apiCartRoutes = require('./routes/apiCartRoutes');
+const apiAuthRoutes = require('./routes/apiAuthRoutes');
+const apiOrderRoutes = require('./routes/apiOrderRoutes');
 const apiAdminRoutes = require('./routes/apiAdminRoutes');
 const productRoutes = require('./routes/productRoutes');
 const authRoutes = require('./routes/authRoutes');
@@ -63,16 +68,21 @@ app.use(express.urlencoded({ extended: true, limit: '50kb' }));
 app.use(hpp());
 
 // 6. Cookie Parser
-app.use(cookieParser(process.env.COOKIE_SECRET || 'apex_default_cookie_secret_998877'));
+if (!process.env.COOKIE_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('COOKIE_SECRET must be set in production');
+}
+const cookieSecret = process.env.COOKIE_SECRET || crypto.randomBytes(32).toString('hex');
+app.use(cookieParser(cookieSecret));
 
 // 7. Secure Session Configuration
 if (!process.env.SESSION_SECRET && process.env.NODE_ENV === 'production') {
   throw new Error('SESSION_SECRET must be set in production');
 }
+const sessionSecret = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
 
 const sessionConfig = {
   name: '__ApexSession', // Avoid generic connect.sid
-  secret: process.env.SESSION_SECRET || 'apex_default_session_secret_1234567890abcdef',
+  secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -94,6 +104,10 @@ app.use(populateViewLocals);
 app.use(csrfProtection);
 
 // 11. REST API Route Registration
+app.use('/api/products', apiProductRoutes);
+app.use('/api/cart', apiCartRoutes);
+app.use('/api/auth', apiAuthRoutes);
+app.use('/api/orders', apiOrderRoutes);
 app.use('/api/admin', apiAdminRoutes);
 app.use('/api', apiRoutes);
 

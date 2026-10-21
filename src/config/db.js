@@ -157,8 +157,10 @@ function seedData() {
 
   if (userCount === 0) {
     const saltRounds = 12;
-    const adminHash = bcrypt.hashSync('Admin@123456', saltRounds);
-    const customerHash = bcrypt.hashSync('Customer@123456', saltRounds);
+    const adminPassword = process.env.INITIAL_ADMIN_PASSWORD || 'Admin@123456';
+    const customerPassword = process.env.INITIAL_CUSTOMER_PASSWORD || 'Customer@123456';
+    const adminHash = bcrypt.hashSync(adminPassword, saltRounds);
+    const customerHash = bcrypt.hashSync(customerPassword, saltRounds);
 
     const insertUser = db.prepare(`
       INSERT INTO users (name, email, password, role)
